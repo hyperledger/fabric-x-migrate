@@ -8,7 +8,7 @@ require (
 	github.com/hyperledger/fabric-x-committer v1.0.5-0.20260806104220-77890ec7c430
 	github.com/hyperledger/fabric-x-common v0.2.9-0.20260723091942-e43f1af10c7e
 	github.com/yugabyte/pgx/v5 v5.7.6-yb-1
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
