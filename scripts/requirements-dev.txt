@@ -1,0 +1,2 @@
+yamllint==1.37.1
+sqlfluff==4.2.2

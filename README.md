@@ -298,8 +298,8 @@ FABRIC_X_MIGRATION_TEST_YUGABYTE_CONTAINER=migration-matrix-yugabyte \
 go test -tags=integration ./internal/migrate -run '^TestDeployment$' -count=1 -timeout=20m -v
 ```
 
-The existing CI integration job runs this scenario against both database
-services alongside the full snapshot matrix. The Arma deployment uses real BFT
+The CI integration job in `.github/workflows/test.yml` runs this scenario against
+both database services alongside the full snapshot matrix. The Arma deployment uses real BFT
 consensus and internal TLS. External orderer and committer connections use
 localhost without TLS. This test does not cover production certificate rotation,
 consensus fault injection, or recovery without the saved sidecar ledger.

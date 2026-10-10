@@ -8,7 +8,12 @@ FABRIC_VERSION ?= 3.1.5
 STATE_DATABASE ?= goleveldb
 CHANNEL ?= migration
 FABRIC_SAMPLES_COMMIT := $(shell cat fabric-samples.commit)
-GOLANGCI_LINT_VERSION ?= v2.4.0
+GOLANGCI_LINT_VERSION ?= v2.13.1
+ACTIONLINT_VERSION ?= v1.7.12
+GOIMPORTS_VERSION ?= v0.43.0
+GOFUMPT_VERSION ?= v0.9.2
+TOOLS_DIR := $(CURDIR)/artifacts/tools
+PYTHON ?= python3
 FABRIC_X_ORDERER_VERSION := v1.0.1
 
 HACK_DIR := $(CURDIR)/hack
@@ -27,11 +32,12 @@ PEER_MSP := $(HACK_DIR)/crypto/peerOrganizations/org1.example.com/users/Admin@or
 ORDERER_ADMIN_ARGS := -o localhost:18053 --ca-file $(ORDERER_CA) --client-cert $(ORDERER_CERT) --client-key $(ORDERER_KEY)
 PEER_ENV := FABRIC_CFG_PATH=$(FABRIC_CONFIG) CORE_PEER_TLS_ENABLED=true CORE_PEER_LOCALMSPID=Org1MSP CORE_PEER_MSPCONFIGPATH=$(PEER_MSP) CORE_PEER_ADDRESS=localhost:18051 CORE_PEER_TLS_ROOTCERT_FILE=$(PEER_CA)
 
-.PHONY: help build runtime-binaries acceptance-binaries test test-integration lint lint-fix hack-samples hack-fabric run-hack stop-hack hack-status
+.PHONY: help build basic-checks check-format check-deps check-license check-dco lint-yaml lint-sql lint-workflows runtime-binaries acceptance-binaries test test-integration lint lint-fix hack-samples hack-fabric run-hack stop-hack hack-status
 
 help:
 	@printf '%s\n' \
 		'build             build artifacts/bin/fabric-x-migrate' \
+		'basic-checks      check licenses, DCO, formatting, dependencies, lint, and build' \
 		'runtime-binaries  build upstream committer and mock orderer for startup tests' \
 		'acceptance-binaries build pinned Arma tools for deployment and recovery tests' \
 		'test              run unit tests' \
@@ -48,6 +54,45 @@ build:
 	@mkdir -p artifacts/bin
 	go build -o artifacts/bin/fabric-x-migrate ./cmd/fabric-x-migrate
 
+basic-checks: check-license check-dco check-format check-deps lint-yaml lint-sql lint-workflows lint build
+
+$(TOOLS_DIR)/goimports:
+	GOBIN=$(TOOLS_DIR) go install golang.org/x/tools/cmd/goimports@$(GOIMPORTS_VERSION)
+
+$(TOOLS_DIR)/gofumpt:
+	GOBIN=$(TOOLS_DIR) go install mvdan.cc/gofumpt@$(GOFUMPT_VERSION)
+
+check-format: $(TOOLS_DIR)/goimports $(TOOLS_DIR)/gofumpt
+	GOIMPORTS=$(TOOLS_DIR)/goimports GOFUMPT=$(TOOLS_DIR)/gofumpt bash scripts/check-format.sh
+
+check-license:
+	bash scripts/check-license.sh
+
+check-dco:
+	bash scripts/check-dco.sh
+
+check-deps:
+	@mkdir -p artifacts
+	@set -eu; dir=$$(mktemp -d artifacts/check-deps.XXXXXX); \
+		trap 'rm -rf "$$dir"' EXIT; \
+		cp go.mod go.sum "$$dir/"; \
+		go mod tidy -modfile="$$dir/go.mod"; \
+		diff -u go.mod "$$dir/go.mod"; diff -u go.sum "$$dir/go.sum"
+
+$(TOOLS_DIR)/venv/.installed: scripts/requirements-dev.txt
+	$(PYTHON) -m venv $(TOOLS_DIR)/venv
+	$(TOOLS_DIR)/venv/bin/pip install -r scripts/requirements-dev.txt
+	touch $@
+
+lint-yaml: $(TOOLS_DIR)/venv/.installed
+	git ls-files --cached --others --exclude-standard -z '*.yaml' '*.yml' | xargs -0 $(TOOLS_DIR)/venv/bin/yamllint
+
+lint-sql: $(TOOLS_DIR)/venv/.installed
+	git ls-files --cached --others --exclude-standard -z '*.sql' | xargs -0 $(TOOLS_DIR)/venv/bin/sqlfluff lint --dialect postgres
+
+lint-workflows:
+	go run github.com/rhysd/actionlint/cmd/actionlint@$(ACTIONLINT_VERSION)
+
 runtime-binaries:
 	@mkdir -p artifacts/runtime/bin
 	go build -o artifacts/runtime/bin/committer github.com/hyperledger/fabric-x-committer/cmd/committer
@@ -60,10 +105,10 @@ acceptance-binaries: build runtime-binaries
 	cp -R "$$(go list -m -f '{{.Dir}}' github.com/hyperledger/fabric-x-orderer@$(FABRIC_X_ORDERER_VERSION))/testutil/fabric/sampleconfig/." artifacts/runtime/orderer-sampleconfig/
 
 test:
-	go test ./... -v
+	go test -race ./... -count=1 -timeout=5m -v
 
 test-integration:
-	go test -tags=integration ./internal/cmd ./internal/migrate -v
+	go test -tags=integration ./internal/cmd ./internal/migrate -count=1 -timeout=35m -v
 
 lint:
 	go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION) run
