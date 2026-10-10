@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //go:build integration
 
 package migrate
@@ -179,6 +183,7 @@ func readRows(t *testing.T, pool *pgxpool.Pool, namespace string) []stateRow {
 	require.NoError(t, err)
 	return result
 }
+
 func requireNoTables(t *testing.T, pool *pgxpool.Pool) {
 	t.Helper()
 	var count int

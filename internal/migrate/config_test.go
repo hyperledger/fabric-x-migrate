@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package migrate
 
 import (
@@ -212,8 +216,10 @@ func TestImplicitMetaConversion(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, x, y)
 		ids := []msp.Identity{
-			policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_PEER}, policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_CLIENT},
-			policyIdentity{mspID: "Org2MSP", role: mb.MSPRole_PEER}, policyIdentity{mspID: "Org2MSP", role: mb.MSPRole_CLIENT},
+			policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_PEER},
+			policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_CLIENT},
+			policyIdentity{mspID: "Org2MSP", role: mb.MSPRole_PEER},
+			policyIdentity{mspID: "Org2MSP", role: mb.MSPRole_CLIENT},
 		}
 		target, _, err := provider.NewPolicy(x)
 		require.NoError(t, err)
@@ -236,8 +242,10 @@ func TestImplicitMetaConversion(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, x, y)
 		ids := []msp.Identity{
-			policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_PEER}, policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_CLIENT},
-			policyIdentity{mspID: "Org3MSP", role: mb.MSPRole_PEER}, policyIdentity{mspID: "Org3MSP", role: mb.MSPRole_CLIENT},
+			policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_PEER},
+			policyIdentity{mspID: "Org1MSP", role: mb.MSPRole_CLIENT},
+			policyIdentity{mspID: "Org3MSP", role: mb.MSPRole_PEER},
+			policyIdentity{mspID: "Org3MSP", role: mb.MSPRole_CLIENT},
 		}
 		target, _, err := provider.NewPolicy(x)
 		require.NoError(t, err)
@@ -285,8 +293,16 @@ func TestImplicitMetaConversion(t *testing.T) {
 			target, _, err := provider.NewPolicy(converted)
 			require.NoError(t, err)
 			for _, ids := range [][]msp.Identity{
-				nil, {peer}, {client}, {other}, {peer, client}, {client, peer},
-				{peer, other}, {client, other}, {peer, client, other}, {other, client, peer},
+				nil,
+				{peer},
+				{client},
+				{other},
+				{peer, client},
+				{client, peer},
+				{peer, other},
+				{client, other},
+				{peer, client, other},
+				{other, client, peer},
 			} {
 				require.Equal(t, source.EvaluateIdentities(ids) == nil, target.EvaluateIdentities(ids) == nil, "identities: %v", ids)
 			}
@@ -345,6 +361,7 @@ func (id policyIdentity) SatisfiesPrincipal(principal *mb.MSPPrincipal) error {
 func signedBy(index int32) *cb.SignaturePolicy {
 	return &cb.SignaturePolicy{Type: &cb.SignaturePolicy_SignedBy{SignedBy: index}}
 }
+
 func nOutOf(n int32, rules ...*cb.SignaturePolicy) *cb.SignaturePolicy {
 	return &cb.SignaturePolicy{Type: &cb.SignaturePolicy_NOutOf_{NOutOf: &cb.SignaturePolicy_NOutOf{N: n, Rules: rules}}}
 }
@@ -454,18 +471,22 @@ func appendRecord(data, key, value []byte) []byte {
 	record = appendField(record, 4, []byte{1, 3, 0})
 	return appendSized(data, record)
 }
+
 func appendField(data []byte, field byte, value []byte) []byte {
 	return appendSized(append(data, field<<3|2), value)
 }
+
 func appendSized(data, value []byte) []byte {
 	return append(binary.AppendUvarint(data, uint64(len(value))), value...)
 }
+
 func marshal(t *testing.T, m proto.Message) []byte {
 	t.Helper()
 	b, e := proto.MarshalOptions{Deterministic: true}.Marshal(m)
 	require.NoError(t, e)
 	return b
 }
+
 func marshalJSON(t *testing.T, m any) []byte {
 	t.Helper()
 	b, e := json.Marshal(m)

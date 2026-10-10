@@ -1,3 +1,7 @@
+# Copyright the Hyperledger Fabric contributors. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 version: "2"
 linters:
   default: standard
@@ -6,4 +10,3 @@ linters:
       allow-first-in-block: true
       allow-whole-block: false
       branch-max-lines: 2
-

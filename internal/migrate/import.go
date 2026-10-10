@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package migrate
 
 import (
@@ -10,10 +14,11 @@ import (
 
 	"github.com/hyperledger/fabric-x-committer/utils/statedb"
 	"github.com/hyperledger/fabric-x-common/api/committerpb"
-	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
 	"github.com/yugabyte/pgx/v5"
 	"github.com/yugabyte/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
 )
 
 const insertBatchSize = 512
