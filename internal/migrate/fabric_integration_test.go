@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/yugabyte/pgx/v5/pgxpool"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/integrationtest"
+	"github.com/hyperledger/fabric-x-migrate/internal/integrationtest"
 )
 
 func TestFabricSnapshots(t *testing.T) {

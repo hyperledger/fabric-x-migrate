@@ -23,7 +23,7 @@ import (
 	"github.com/hyperledger/fabric-x-common/common/policydsl"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
+	"github.com/hyperledger/fabric-x-migrate/internal/fabricsnapshot"
 )
 
 type channelConfig struct {

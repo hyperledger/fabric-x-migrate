@@ -9,7 +9,7 @@ package migrate
 import (
 	"testing"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/integrationtest"
+	"github.com/hyperledger/fabric-x-migrate/internal/integrationtest"
 )
 
 const FabricVersion = integrationtest.Version

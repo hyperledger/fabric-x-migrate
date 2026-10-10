@@ -1,6 +1,6 @@
-module github.com/syndbg/fabric-x-migrate-poc
+module github.com/hyperledger/fabric-x-migrate
 
-go 1.26.5
+go 1.26.9
 
 require (
 	github.com/hyperledger/fabric-lib-go v1.1.5-0.20260708100132-163bcc919208

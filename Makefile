@@ -14,6 +14,7 @@ GOIMPORTS_VERSION ?= v0.43.0
 GOFUMPT_VERSION ?= v0.9.2
 TOOLS_DIR := $(CURDIR)/artifacts/tools
 PYTHON ?= python3
+RELEASE_PLATFORMS ?= linux/amd64 linux/arm64 linux/s390x darwin/amd64 darwin/arm64
 FABRIC_X_ORDERER_VERSION := v1.0.1
 
 HACK_DIR := $(CURDIR)/hack
@@ -32,11 +33,12 @@ PEER_MSP := $(HACK_DIR)/crypto/peerOrganizations/org1.example.com/users/Admin@or
 ORDERER_ADMIN_ARGS := -o localhost:18053 --ca-file $(ORDERER_CA) --client-cert $(ORDERER_CERT) --client-key $(ORDERER_KEY)
 PEER_ENV := FABRIC_CFG_PATH=$(FABRIC_CONFIG) CORE_PEER_TLS_ENABLED=true CORE_PEER_LOCALMSPID=Org1MSP CORE_PEER_MSPCONFIGPATH=$(PEER_MSP) CORE_PEER_ADDRESS=localhost:18051 CORE_PEER_TLS_ROOTCERT_FILE=$(PEER_CA)
 
-.PHONY: help build basic-checks check-format check-deps check-license check-dco lint-yaml lint-sql lint-workflows runtime-binaries acceptance-binaries test test-integration lint lint-fix hack-samples hack-fabric run-hack stop-hack hack-status
+.PHONY: help build build-release basic-checks check-format check-deps check-license check-dco lint-yaml lint-sql lint-workflows runtime-binaries acceptance-binaries test test-integration lint lint-fix hack-samples hack-fabric run-hack stop-hack hack-status
 
 help:
 	@printf '%s\n' \
 		'build             build artifacts/bin/fabric-x-migrate' \
+		'build-release     build binary archives and checksums in artifacts/release' \
 		'basic-checks      check licenses, DCO, formatting, dependencies, lint, and build' \
 		'runtime-binaries  build upstream committer and mock orderer for startup tests' \
 		'acceptance-binaries build pinned Arma tools for deployment and recovery tests' \
@@ -53,6 +55,16 @@ help:
 build:
 	@mkdir -p artifacts/bin
 	go build -o artifacts/bin/fabric-x-migrate ./cmd/fabric-x-migrate
+
+build-release:
+	@mkdir -p artifacts/release
+	@set -eu; for platform in $(RELEASE_PLATFORMS); do \
+		os=$${platform%/*}; arch=$${platform#*/}; \
+		dir=artifacts/release/$$os-$$arch; mkdir -p "$$dir"; \
+		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -o "$$dir/fabric-x-migrate" ./cmd/fabric-x-migrate; \
+		tar -czf "artifacts/release/fabric-x-migrate-$$os-$$arch.tar.gz" -C "$$dir" fabric-x-migrate; \
+	done
+	cd artifacts/release && shasum -a 256 fabric-x-migrate-*.tar.gz > SHA256SUMS
 
 basic-checks: check-license check-dco check-format check-deps lint-yaml lint-sql lint-workflows lint build
 

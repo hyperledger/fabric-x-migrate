@@ -303,3 +303,47 @@ both database services alongside the full snapshot matrix. The Arma deployment u
 consensus and internal TLS. External orderer and committer connections use
 localhost without TLS. This test does not cover production certificate rotation,
 consensus fault injection, or recovery without the saved sidecar ledger.
+
+## CI and releases
+
+Pull requests and pushes to `main` and `release/**` run separate workflows:
+
+- `verify-build.yml` runs `make basic-checks` and builds release archives and the
+  multi-platform container image.
+- `test.yml` runs unit tests and the complete snapshot, import, deployment, and
+  recovery suite against disposable PostgreSQL and YugabyteDB containers.
+- `codeql.yml` scans Go code and GitHub Actions workflows.
+
+`make basic-checks` checks license headers, DCO sign-offs, goimports/gofumpt,
+module tidiness, YAML and SQL lint, workflow syntax, Go lint, and the CLI build.
+It installs pinned tools under `artifacts/tools/`. Python 3 with venv support is
+required. `make test` runs unit tests with race detection.
+
+`make check-dco` checks commits after `origin/main`. CI sets `DCO_BASE_REF` to the
+PR base or the previous branch tip. Use `git commit -s` to add your sign-off.
+
+`make build-release` creates Linux archives for amd64, arm64, and
+s390x, plus macOS archives for amd64 and arm64, with `SHA256SUMS` in
+`artifacts/release/`.
+
+The container build compiles the CLI from source in a Go builder stage. It does
+not require local release artifacts:
+
+```sh
+docker build -t fabric-x-migrate:local .
+```
+
+The runtime uses UBI minimal 9.8 and runs as user `10001`, following the Fabric-X
+orderer and committer images. Image labels record the source, version, revision,
+creation time, and Apache-2.0 license.
+
+Pushing a version tag such as `v1.0.0` publishes those archives as a GitHub release
+and pushes Linux images to `docker.io/hyperledger/fabric-x-migrate` and
+`ghcr.io/hyperledger/fabric-x-migrate`. Prerelease tags such as `v1.0.0-rc.1` create
+prereleases and do not update the `latest` image tag. The Docker Hub publish step
+requires the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
+Forks publish under their Docker Hub username and GitHub repository owner.
+
+All workflows support manual runs. A manual `release.yml` run builds the archives
+and images and uploads the archives as workflow artifacts. It does not publish a
+GitHub release or push images.

@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
+	"github.com/hyperledger/fabric-x-migrate/internal/fabricsnapshot"
 )
 
 func TestMappingsAndPolicies(t *testing.T) {

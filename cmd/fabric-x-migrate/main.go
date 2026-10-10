@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	migrationcmd "github.com/syndbg/fabric-x-migrate-poc/internal/cmd"
+	migrationcmd "github.com/hyperledger/fabric-x-migrate/internal/cmd"
 )
 
 func main() {

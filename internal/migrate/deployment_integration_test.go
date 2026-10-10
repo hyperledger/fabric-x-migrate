@@ -37,7 +37,7 @@ import (
 	"github.com/yugabyte/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/integrationtest"
+	"github.com/hyperledger/fabric-x-migrate/internal/integrationtest"
 )
 
 func TestDeployment(t *testing.T) {

@@ -18,7 +18,7 @@ import (
 	"github.com/yugabyte/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
+	"github.com/hyperledger/fabric-x-migrate/internal/fabricsnapshot"
 )
 
 const insertBatchSize = 512
