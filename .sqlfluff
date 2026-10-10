@@ -1,0 +1,10 @@
+# Copyright the Hyperledger Fabric contributors. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[sqlfluff]
+dialect = postgres
+templater = raw
+max_line_length = 120
+# Match the committer's treatment of schema layout and key/value column names.
+exclude_rules = AM04, ST06, LT01, LT02, RF04

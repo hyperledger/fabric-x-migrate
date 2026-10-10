@@ -1,0 +1,28 @@
+# Copyright the Hyperledger Fabric contributors. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: fabric-x-migrate-tests
+
+services:
+  postgres:
+    image: postgres:16.13
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - '127.0.0.1:25432:5432'
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  yugabyte:
+    image: yugabytedb/yugabyte:2025.2.0.1-b1
+    command: bin/yugabyted start --daemon=false --tserver_flags=ysql_yb_ddl_transaction_block_enabled=true
+    ports:
+      - '127.0.0.1:25433:5433'
+    healthcheck:
+      test: [CMD-SHELL, 'bin/ysqlsh -h $$(hostname -i) -U yugabyte -d yugabyte -c "SELECT 1"']
+      interval: 2s
+      timeout: 5s
+      retries: 60

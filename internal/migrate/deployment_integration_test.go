@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //go:build integration
 
 package migrate
@@ -33,7 +37,7 @@ import (
 	"github.com/yugabyte/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/integrationtest"
+	"github.com/hyperledger/fabric-x-migrate/internal/integrationtest"
 )
 
 func TestDeployment(t *testing.T) {
@@ -97,8 +101,10 @@ func TestDeployment(t *testing.T) {
 			assertDeploymentState(t, secondOrg, expected, privateKeys)
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 			defer cancel()
-			broadcaster, err := adapters.NewBroadcastStream(ctx, &ordererdial.Config{FaultToleranceLevel: ordererdial.BFT,
-				LatestKnownConfigBlockPath: arma.blockPath, TLS: connection.TLSConfig{Mode: connection.NoneTLSMode}})
+			broadcaster, err := adapters.NewBroadcastStream(ctx, &ordererdial.Config{
+				FaultToleranceLevel:        ordererdial.BFT,
+				LatestKnownConfigBlockPath: arma.blockPath, TLS: connection.TLSConfig{Mode: connection.NoneTLSMode},
+			})
 			require.NoError(t, err)
 			defer connection.CloseConnectionsLog(broadcaster)
 
@@ -195,8 +201,10 @@ func startDeploymentCommitter(t *testing.T, repository string, db *pgxpool.Pool,
 	system := config.SystemConfig{
 		ClientTLS: insecure, LedgerPath: ledger,
 		Policy: &workload.PolicyProfile{ArtifactsPath: filepath.Dir(arma.blockPath)},
-		DB: config.DatabaseConfig{Name: conn.Database, Username: conn.User, Password: conn.Password,
-			Endpoints: []*connection.Endpoint{{Host: conn.Host, Port: int(conn.Port)}}, TLS: statedb.TLSConfig{Mode: connection.NoneTLSMode}},
+		DB: config.DatabaseConfig{
+			Name: conn.Database, Username: conn.User, Password: conn.Password,
+			Endpoints: []*connection.Endpoint{{Host: conn.Host, Port: int(conn.Port)}}, TLS: statedb.TLSConfig{Mode: connection.NoneTLSMode},
+		},
 		VCMinTransactionBatchSize: 1, VCTimeoutForMinTransactionBatchSize: 100 * time.Millisecond,
 		VerifierBatchTimeCutoff: 10 * time.Millisecond,
 	}
@@ -208,8 +216,11 @@ func startDeploymentCommitter(t *testing.T, repository string, db *pgxpool.Pool,
 	}
 	var services []service
 	for _, entry := range []struct{ name, template string }{
-		{"verifier", config.TemplateVerifier}, {"vc", config.TemplateVC}, {"coordinator", config.TemplateCoordinator},
-		{"query", config.TemplateQueryService}, {"sidecar", config.TemplateSidecar},
+		{"verifier", config.TemplateVerifier},
+		{"vc", config.TemplateVC},
+		{"coordinator", config.TemplateCoordinator},
+		{"query", config.TemplateQueryService},
+		{"sidecar", config.TemplateSidecar},
 	} {
 		address, release := reserveDeploymentAddress(t)
 		host, port, err := net.SplitHostPort(address)

@@ -1,0 +1,13 @@
+# Copyright the Hyperledger Fabric contributors. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+**
+!go.mod
+!go.sum
+!Makefile
+!fabric-samples.commit
+!cmd/
+!cmd/**
+!internal/
+!internal/**

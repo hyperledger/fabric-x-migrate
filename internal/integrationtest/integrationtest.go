@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //go:build integration
 
 package integrationtest
@@ -226,12 +230,15 @@ func (f *fabricNetwork) bin(name string) string { return filepath.Join(f.home, "
 func (f *fabricNetwork) crypto(parts ...string) string {
 	return filepath.Join(append([]string{f.root, "crypto"}, parts...)...)
 }
+
 func (f *fabricNetwork) peerCA() string {
 	return f.crypto("peerOrganizations", "org1.example.com", "tlsca", "tlsca.org1.example.com-cert.pem")
 }
+
 func (f *fabricNetwork) ordererCA() string {
 	return f.crypto("ordererOrganizations", "example.com", "tlsca", "tlsca.example.com-cert.pem")
 }
+
 func (f *fabricNetwork) ordererArgs() []string {
 	return []string{"--orderer", "localhost:18050", "--ordererTLSHostnameOverride", "orderer.example.com", "--tls", "--cafile", f.ordererCA()}
 }
@@ -239,6 +246,7 @@ func (f *fabricNetwork) runPeer(args ...string) { f.runCommand(f.peerCommand(arg
 func (f *fabricNetwork) peerOutput(args ...string) string {
 	return f.output(f.peerCommand(args...))
 }
+
 func (f *fabricNetwork) peerCommand(args ...string) *exec.Cmd {
 	command := f.command(f.bin("peer"), args...)
 	command.Env = append(command.Env,
@@ -264,6 +272,7 @@ func (f *fabricNetwork) command(name string, args ...string) *exec.Cmd {
 	command.Env = os.Environ()
 	return command
 }
+
 func (f *fabricNetwork) runCommand(command *exec.Cmd) {
 	f.t.Helper()
 	output, err := command.CombinedOutput()
@@ -273,6 +282,7 @@ func (f *fabricNetwork) runCommand(command *exec.Cmd) {
 	logs, _ := f.composeCommand("logs", "peer", "couchdb").CombinedOutput()
 	require.NoError(f.t, err, "%s failed\n%s\n%s", command.String(), output, logs)
 }
+
 func (f *fabricNetwork) output(command *exec.Cmd) string {
 	f.t.Helper()
 	output, err := command.CombinedOutput()

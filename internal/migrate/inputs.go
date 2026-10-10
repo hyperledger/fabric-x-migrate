@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package migrate
 
 import (
@@ -14,7 +18,8 @@ import (
 
 	"github.com/hyperledger/fabric-x-committer/service/verifier/policy"
 	"github.com/hyperledger/fabric-x-common/api/committerpb"
-	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
+
+	"github.com/hyperledger/fabric-x-migrate/internal/fabricsnapshot"
 )
 
 type Mapping struct {

@@ -13,7 +13,8 @@ versions are not imported. There is no migration bundle or migration state table
 
 ## Run an import
 
-Build with the Go version specified in `go.mod`:
+For local setup, see [CONTRIBUTING.md](CONTRIBUTING.md#local-development-setup).
+Build the CLI:
 
 ```sh
 make build
@@ -213,93 +214,7 @@ fallback. Record counts alone do not establish state equality across committers.
 Once the separate feature is available, use it to compare database state across
 committers.
 
-Unit tests cover source parsing, mappings, MSP conflicts, and policy conversion.
-The database test uses two independent databases and covers public state, both
-hash destinations, consolidation, collision rollback, repeated imports, and
-concurrent imports. It compares actual rows within the test; this does not add a
-verification algorithm to the CLI.
+## Contributing
 
-```sh
-make test
-
-FABRIC_X_MIGRATION_TEST_DATABASE_URL='postgres://postgres@localhost:25432/postgres?sslmode=disable' \
-go test -tags=integration ./internal/migrate -run '^TestImport$' -count=1 -v
-```
-
-Use a disposable PostgreSQL or YugabyteDB server with permission to create and
-drop test databases. YugabyteDB requires the tserver setting
-`ysql_yb_ddl_transaction_block_enabled=true` for atomic table creation and import;
-the CLI checks this before writing. See [YugabyteDB transactional DDL](https://docs.yugabyte.com/stable/explore/transactions/transactional-ddl/).
-The database checks pass on PostgreSQL 16.13 and YugabyteDB 2025.2.0.1-b1 with
-that setting enabled.
-
-The live Fabric 3.1.5 suite covers these mappings with both LevelDB and CouchDB:
-
-| Source mapping | Hash destination |
-| --- | --- |
-| One channel | No hashes, with public state, or in a separate namespace |
-| Two channels, separate application namespaces | No hashes, with public state, or in separate hash namespaces |
-| Two channels, one shared application namespace | No hashes, with public state, or in one separate hash namespace |
-
-Each of the 18 cases runs the CLI against two independent, empty databases with
-identical inputs. Tests compare every imported key, value, hash, version, and
-record count against the known source writes. They then start the upstream
-Fabric-X committer services with the upstream mock orderer against one imported
-database, check exact application reads
-and private-key exclusion, update public and hash rows using the source peer
-identity, and reject writes from a source administrator in every destination
-namespace. Collection hash collisions must roll back with either hash destination.
-
-The source-network harness and Fabric configuration are under `hack/` and
-`internal/integrationtest/`. `make run-hack` starts a local Fabric source network;
-`make stop-hack` stops it and deletes its volumes. Run `make help` for the available
-targets.
-
-To run the complete real-snapshot and Fabric-X startup matrix:
-
-```sh
-make build runtime-binaries
-FABRIC_X_MIGRATION_TEST_FABRIC=1 \
-FABRIC_X_MIGRATION_TEST_DATABASE_URL='postgres://postgres@localhost:25432/postgres?sslmode=disable' \
-go test -tags=integration ./internal/migrate -run '^TestFabricSnapshots$' -count=1 -timeout=20m -v
-```
-
-This starts and removes a disposable Fabric network. It reuses the pinned
-`fabric-samples` checkout and includes a small test contract that writes one
-public value and one value in a private collection per channel. The startup
-checks are part of this suite; there is no separate runtime opt-in flag.
-
-## Deployment and recovery acceptance
-
-`TestDeployment` uses the pinned Fabric-X Arma orderer (`v1.0.1`), with four
-parties and one shard. Two organizations run independent committer service sets,
-use different MSP identities for block delivery, and import into separate
-databases. The test imports public state and separate hash namespaces from two
-real Classic channels, then checks reads, authorized writes, and rejected writes
-on both organizations.
-
-After target writes, the test stops one organization's services and backs up its
-database and sidecar ledger. It uses PostgreSQL's `pg_dump`/`psql` or YugabyteDB's
-`ysql_dump`/`ysqlsh` inside the configured database container. While that
-organization is stopped, the other commits more writes. The test restores into
-a fresh database, starts services from the saved ledger, checks catch-up from
-Arma, and submits another write to both organizations. Assertions cover exact
-keys, values, versions, private-key exclusion, and transaction status.
-
-Run both database backends with their existing disposable containers:
-
-```sh
-make acceptance-binaries
-FABRIC_X_MIGRATION_TEST_DEPLOYMENT=1 \
-FABRIC_X_MIGRATION_TEST_DATABASE_URL='postgres://postgres@localhost:25432/postgres?sslmode=disable' \
-FABRIC_X_MIGRATION_TEST_YUGABYTE_DATABASE_URL='postgres://yugabyte@localhost:25433/yugabyte?sslmode=disable' \
-FABRIC_X_MIGRATION_TEST_POSTGRES_CONTAINER=migration-matrix-postgres \
-FABRIC_X_MIGRATION_TEST_YUGABYTE_CONTAINER=migration-matrix-yugabyte \
-go test -tags=integration ./internal/migrate -run '^TestDeployment$' -count=1 -timeout=20m -v
-```
-
-The existing CI integration job runs this scenario against both database
-services alongside the full snapshot matrix. The Arma deployment uses real BFT
-consensus and internal TLS. External orderer and committer connections use
-localhost without TLS. This test does not cover production certificate rotation,
-consensus fault injection, or recovery without the saved sidecar ledger.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, checks, integration
+tests, CI, and releases.

@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package cmd
 
 import (
@@ -10,8 +14,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/migrate"
 	"github.com/yugabyte/pgx/v5/pgxpool"
+
+	"github.com/hyperledger/fabric-x-migrate/internal/migrate"
 )
 
 func Run(args []string, stdout, stderr io.Writer) error {

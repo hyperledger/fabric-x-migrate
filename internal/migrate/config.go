@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package migrate
 
 import (
@@ -19,7 +23,7 @@ import (
 	"github.com/hyperledger/fabric-x-common/common/policydsl"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/fabricsnapshot"
+	"github.com/hyperledger/fabric-x-migrate/internal/fabricsnapshot"
 )
 
 type channelConfig struct {

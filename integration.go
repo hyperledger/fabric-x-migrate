@@ -1,3 +1,7 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //go:build integration
 
 package migrate
@@ -5,7 +9,7 @@ package migrate
 import (
 	"testing"
 
-	"github.com/syndbg/fabric-x-migrate-poc/internal/integrationtest"
+	"github.com/hyperledger/fabric-x-migrate/internal/integrationtest"
 )
 
 const FabricVersion = integrationtest.Version
